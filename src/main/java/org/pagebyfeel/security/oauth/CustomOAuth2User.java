@@ -1,7 +1,7 @@
 package org.pagebyfeel.security.oauth;
 
 import lombok.Getter;
-import org.pagebyfeel.entity.Provider;
+import org.pagebyfeel.entity.user.Provider;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 
@@ -15,7 +15,7 @@ public class CustomOAuth2User implements OAuth2User {
     private final UUID userId;
     private final String email;
     private final String nickname;
-    private final String provider;
+    private final Provider provider;
     private final Collection<? extends GrantedAuthority> authorities;
     private final Map<String, Object> attributes;
 

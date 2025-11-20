@@ -1,9 +1,9 @@
 package org.pagebyfeel.security.oauth;
 
 import lombok.RequiredArgsConstructor;
-import org.pagebyfeel.entity.Provider;
-import org.pagebyfeel.entity.Role;
-import org.pagebyfeel.entity.User;
+import org.pagebyfeel.entity.user.Provider;
+import org.pagebyfeel.entity.user.Role;
+import org.pagebyfeel.entity.user.User;
 import org.pagebyfeel.repository.UserRepository;
 import org.pagebyfeel.security.JwtTokenProvider;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
