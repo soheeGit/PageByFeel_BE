@@ -1,4 +1,4 @@
-package org.example.pagebyfeel_be;
+package org.pagebyfeel;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
