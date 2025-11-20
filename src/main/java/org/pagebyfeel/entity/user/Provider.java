@@ -1,4 +1,4 @@
-package org.pagebyfeel.entity;
+package org.pagebyfeel.entity.user;
 
 public enum Provider {
     GOOGLE,

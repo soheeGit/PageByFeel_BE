@@ -1,4 +1,4 @@
-package org.pagebyfeel.entity;
+package org.pagebyfeel.entity.user;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -29,4 +29,8 @@ public class User {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Provider provider;
+
+    public void updateNickname(String nickname) {
+        this.nickname = nickname;
+    }
 }
