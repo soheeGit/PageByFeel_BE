@@ -6,13 +6,18 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import org.pagebyfeel.entity.user.User;
+import org.pagebyfeel.repository.UserRepository;
+import org.pagebyfeel.security.oauth.CustomOAuth2User;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
@@ -22,16 +27,19 @@ public class JwtTokenProvider {
     private final SecretKey key;
     private final long accessTokenValidityInMillis;
     private final long refreshTokenValidityInMillis;
+    private final UserRepository userRepository;
 
     public JwtTokenProvider(
             @org.springframework.beans.factory.annotation.Value("${jwt.secret-key}") String secretKey,
             @org.springframework.beans.factory.annotation.Value("${jwt.access-token-expiration-minutes}") long accessTokenMinutes,
-            @org.springframework.beans.factory.annotation.Value("${jwt.refresh-token-expiration-days}") long refreshTokenDays
+            @org.springframework.beans.factory.annotation.Value("${jwt.refresh-token-expiration-days}") long refreshTokenDays,
+            UserRepository userRepository
     ) {
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         this.key = Keys.hmacShaKeyFor(keyBytes);
         this.accessTokenValidityInMillis = accessTokenMinutes * 60 * 1000;
         this.refreshTokenValidityInMillis = refreshTokenDays * 24 * 60 * 60 * 1000;
+        this.userRepository = userRepository;
     }
 
     public String generateAccessToken(UUID userId, String role) {
@@ -71,10 +79,26 @@ public class JwtTokenProvider {
         UUID userId = UUID.fromString(claims.getSubject());
         String role = claims.get("role", String.class);
 
+        if (role == null || role.isEmpty()) {
+            throw new JwtException("Role claim is missing in token");
+        }
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        CustomOAuth2User principal = new CustomOAuth2User(
+                user.getUserId(),
+                user.getEmail(),
+                user.getNickname(),
+                user.getProvider(),
+                List.of(new SimpleGrantedAuthority("ROLE_" + role)),
+                new HashMap<>()
+        );
+
         return new UsernamePasswordAuthenticationToken(
-                userId,
+                principal,
                 null,
-                List.of(new SimpleGrantedAuthority("ROLE_" + role))
+                principal.getAuthorities()
         );
     }
 

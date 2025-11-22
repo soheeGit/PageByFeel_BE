@@ -60,6 +60,7 @@ public class AuthService {
                 user.getRole().name()
         );
 
+        redisService.deleteRefreshToken(userId);
         String newRefreshToken = jwtTokenProvider.generateRefreshToken(user.getUserId());
         redisService.saveRefreshToken(userId, newRefreshToken, refreshTokenExpirationDays);
 

@@ -22,13 +22,6 @@ public class UserServiceImpl implements UserService {
     private final RedisService redisService;
 
     @Override
-    public void logout(UUID userId) {
-        // Redis에서 Refresh Token 삭제
-        redisService.deleteRefreshToken(userId);
-        log.info("User {} logged out", userId);
-    }
-
-    @Override
     @Transactional(readOnly = true)
     public UserResponse getUserInfo(UUID userId) {
         User user = userRepository.findById(userId)

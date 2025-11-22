@@ -28,14 +28,18 @@ public class CorsConfig {
                 "http://127.0.0.1:3000"
             ));
         } else {
-            configuration.setAllowedOrigins(Arrays.asList(
-                "https://jinsohee.store",
-                "http://localhost:5173"
+            configuration.setAllowedOrigins(List.of(
+                    "https://jinsohee.store"
             ));
         }
         
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
-        configuration.setAllowedHeaders(List.of("*"));
+        configuration.setAllowedHeaders(Arrays.asList(
+                "Authorization",
+                "Content-Type",
+                "Accept",
+                "X-Requested-With"
+        ));
         configuration.setAllowCredentials(true);
         
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

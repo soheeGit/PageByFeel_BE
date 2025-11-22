@@ -1,5 +1,6 @@
 package org.pagebyfeel.security.oauth;
 
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -10,10 +11,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 
 @Slf4j
 @Component
@@ -26,31 +25,28 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
     @Value("${app.oauth2.authorized-redirect-uri}")
     private String redirectUri;
 
+    @Value("${spring.profiles.active}")
+    private String activeProfile;
+
+    @Value("${jwt.access-token-expiration-minutes}")
+    private long accessTokenExpirationMinutes;
+
+    @Value("${jwt.refresh-token-expiration-days}")
+    private long refreshTokenExpirationDays;
+
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request,
                                         HttpServletResponse response,
                                         Authentication authentication) throws IOException {
-        
-        String targetUrl = determineTargetUrl(request, response, authentication);
 
         if (response.isCommitted()) {
-            log.debug("Response has already been committed. Unable to redirect to " + targetUrl);
+            log.debug("Response has already been committed. Unable to redirect");
             return;
         }
 
-        clearAuthenticationAttributes(request);
-        getRedirectStrategy().sendRedirect(request, response, targetUrl);
-    }
-
-    @Override
-    protected String determineTargetUrl(HttpServletRequest request,
-                                        HttpServletResponse response,
-                                        Authentication authentication) {
-        
-        // OAuth2User에서 사용자 정보 추출
         CustomOAuth2User oAuth2User = (CustomOAuth2User) authentication.getPrincipal();
 
-        // JWT 토큰 생성
+        // Access Token 생성 (userId와 role만 포함)
         String accessToken = jwtTokenProvider.generateAccessToken(
                 oAuth2User.getUserId(),
                 oAuth2User.getAuthorities().iterator().next()
@@ -58,17 +54,38 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         );
         String refreshToken = jwtTokenProvider.generateRefreshToken(oAuth2User.getUserId());
 
-        // Refresh Token을 Redis에 저장
         authService.saveRefreshToken(oAuth2User.getUserId(), refreshToken);
+
+        // 쿠키 만료 시간을 설정값에서 가져와서 사용
+        int accessTokenMaxAge = (int) (accessTokenExpirationMinutes * 60);  // 분 → 초
+        int refreshTokenMaxAge = (int) (refreshTokenExpirationDays * 24 * 60 * 60);  // 일 → 초
+        
+        addTokenCookie(response, "accessToken", accessToken, accessTokenMaxAge);
+        addTokenCookie(response, "refreshToken", refreshToken, refreshTokenMaxAge);
 
         log.info("OAuth2 login success for user: {}", oAuth2User.getUserId());
 
-        // 프론트엔드로 리다이렉트 (토큰을 쿼리 파라미터로 전달)
-        return UriComponentsBuilder.fromUriString(redirectUri)
-                .queryParam("accessToken", accessToken)
-                .queryParam("refreshToken", refreshToken)
-                .encode(StandardCharsets.UTF_8)
-                .build()
-                .toUriString();
+        clearAuthenticationAttributes(request);
+
+        getRedirectStrategy().sendRedirect(request, response, redirectUri);
+    }
+
+    private void addTokenCookie(HttpServletResponse response, String name, String value, int maxAge) {
+        Cookie cookie = new Cookie(name, value);
+        cookie.setHttpOnly(true);
+
+        boolean isProduction = "prod".equals(activeProfile);
+        cookie.setSecure(isProduction);
+
+        cookie.setPath("/");
+        cookie.setMaxAge(maxAge);
+
+        if (isProduction) {
+            cookie.setAttribute("SameSite", "None");
+        } else {
+            cookie.setAttribute("SameSite", "Lax");
+        }
+
+        response.addCookie(cookie);
     }
 }

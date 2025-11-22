@@ -2,6 +2,7 @@ package org.pagebyfeel.security;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -23,8 +24,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
         String token = parseJwt(request);
-        
-        // 토큰이 있고, 유효하며, 블랙리스트에 없는 경우에만 인증 처리
+
         if (token != null && jwtTokenProvider.validateToken(token) && !redisService.isBlacklisted(token)) {
             SecurityContextHolder.getContext().setAuthentication(jwtTokenProvider.getAuthentication(token));
         }
@@ -37,6 +37,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (StringUtils.hasText(header) && header.startsWith("Bearer ")) {
             return header.substring(7);
         }
+
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("accessToken".equals(cookie.getName())) {
+                    return cookie.getValue();
+                }
+            }
+        }
+
         return null;
     }
 }

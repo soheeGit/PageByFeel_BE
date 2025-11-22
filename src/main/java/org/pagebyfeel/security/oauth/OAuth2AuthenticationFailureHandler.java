@@ -25,12 +25,10 @@ public class OAuth2AuthenticationFailureHandler extends SimpleUrlAuthenticationF
     public void onAuthenticationFailure(HttpServletRequest request,
                                         HttpServletResponse response,
                                         AuthenticationException exception) throws IOException {
-        
-        log.error("OAuth2 authentication failed: {}", exception.getMessage());
 
         String targetUrl = UriComponentsBuilder.fromUriString(redirectUri)
                 .queryParam("error", "true")
-                .queryParam("message", exception.getLocalizedMessage())
+                .queryParam("message", "Authentication failed")
                 .encode(StandardCharsets.UTF_8)
                 .build()
                 .toUriString();

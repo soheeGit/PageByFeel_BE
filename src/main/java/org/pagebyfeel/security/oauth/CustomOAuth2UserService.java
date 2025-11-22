@@ -31,19 +31,26 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 
         String email = oAuth2User.getAttribute("email");
         String provider = userRequest.getClientRegistration().getRegistrationId().toUpperCase();
+        Provider providerEnum;
+        try {
+            providerEnum = Provider.valueOf(provider);
+        } catch (IllegalArgumentException e) {
+            throw new OAuth2AuthenticationException("Unsupported provider: ");
+        }
+
+        if (email == null || email.isEmpty()) {
+            throw new OAuth2AuthenticationException("Email not found in OAuth2 user info");
+        }
 
         User user = userRepository.findByEmail(email)
-                .orElseGet(() -> {
-                    assert email != null;
-                    return userRepository.save(
-                            User.builder()
-                                    .email(email)
-                                    .provider(Provider.valueOf(provider))
-                                    .role(Role.USER)
-                                    .nickname(email.split("@")[0])
-                                    .build()
-                    );
-                });
+                .orElseGet(() -> userRepository.save(
+                        User.builder()
+                                .email(email)
+                                .provider(providerEnum)
+                                .role(Role.USER)
+                                .nickname(email.split("@")[0])
+                                .build()
+                ));
 
         Map<String, Object> attributes = new HashMap<>(oAuth2User.getAttributes());
 

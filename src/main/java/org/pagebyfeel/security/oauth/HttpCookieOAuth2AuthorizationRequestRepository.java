@@ -10,10 +10,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.Base64;
 
-/**
- * OAuth2 인증 요청을 쿠키에 저장하는 리포지토리
- * CSRF 공격을 방지하고 OAuth2 로그인 플로우의 상태를 유지합니다.
- */
 @Component
 public class HttpCookieOAuth2AuthorizationRequestRepository implements AuthorizationRequestRepository<OAuth2AuthorizationRequest> {
 
@@ -102,8 +98,14 @@ public class HttpCookieOAuth2AuthorizationRequestRepository implements Authoriza
     }
 
     private OAuth2AuthorizationRequest deserialize(Cookie cookie) {
-        return org.springframework.util.SerializationUtils.deserialize(
+        Object deserialized = org.springframework.util.SerializationUtils.deserialize(
                 Base64.getUrlDecoder().decode(cookie.getValue())
         );
+
+        if (deserialized instanceof OAuth2AuthorizationRequest) {
+            return (OAuth2AuthorizationRequest) deserialized;
+        }
+
+        throw new IllegalArgumentException("Invalid OAuth2AuthorizationRequest cookie");
     }
 }
