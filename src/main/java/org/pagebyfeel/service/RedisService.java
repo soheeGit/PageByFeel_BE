@@ -1,6 +1,5 @@
 package org.pagebyfeel.service;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.RedisConnectionFailureException;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -12,11 +11,18 @@ import java.util.concurrent.TimeUnit;
 
 @Service
 @Slf4j
-@RequiredArgsConstructor
 public class RedisService {
 
     private final RedisTemplate<String, String> stringRedisTemplate;
     private final RedisTemplate<String, Object> redisTemplate;
+
+    public RedisService(
+            RedisTemplate<String, String> stringRedisTemplate,
+            RedisTemplate<String, Object> redisTemplate
+    ) {
+        this.stringRedisTemplate = stringRedisTemplate;
+        this.redisTemplate = redisTemplate;
+    }
 
     private static final String REFRESH_TOKEN_PREFIX = "refresh_token:";
     private static final String BLACKLIST_PREFIX = "blacklist:";
