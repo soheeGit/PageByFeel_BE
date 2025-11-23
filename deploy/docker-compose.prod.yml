@@ -19,7 +19,7 @@ services:
     networks:
       - pagebyfeel-network
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8080/api/swagger-ui/index.html" ]
+      test: [ "CMD", "curl", "-f", "http://localhost:8080/swagger-ui/index.html" ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -36,7 +36,7 @@ services:
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
       - REDIS_HOST=redis
       - REDIS_PORT=6379
-      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-}
       - SPRING_DATASOURCE_URL=${DB_URL}
       - SPRING_DATASOURCE_USERNAME=${DB_USERNAME}
       - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
@@ -53,39 +53,15 @@ services:
     depends_on:
       redis:
         condition: service_healthy
-      postgres:
-        condition: service_healthy
     restart: unless-stopped
     networks:
       - pagebyfeel-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/api/actuator/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 60s
-
-  # PostgreSQL Database
-  postgres:
-    image: postgres:17-alpine
-    container_name: pagebyfeel-postgres
-    environment:
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ${DB_NAME}
-      PGDATA: /var/lib/postgresql/data/pgdata
-    ports:
-      - "${POSTGRES_PORT:-5432}:5432"
-    volumes:
-      - pagebyfeel-postgres-data:/var/lib/postgresql/data
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-    networks:
-      - pagebyfeel-network
 
   # Redis for caching and token storage
   redis:
@@ -108,8 +84,6 @@ services:
 
 volumes:
   pagebyfeel-redis-data:
-    driver: local
-  pagebyfeel-postgres-data:
     driver: local
 
 networks:
