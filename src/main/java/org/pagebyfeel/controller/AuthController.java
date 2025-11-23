@@ -1,6 +1,8 @@
 package org.pagebyfeel.controller;
 
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.pagebyfeel.dto.request.RefreshTokenRequest;
@@ -31,18 +33,37 @@ public class AuthController {
     @PostMapping("/logout")
     public ApiResponse<Void> logout(
             @AuthenticationPrincipal CustomOAuth2User user,
-            HttpServletRequest request
+            HttpServletRequest request,
+            HttpServletResponse response
     ) {
         if (user != null) {
-            String authHeader = request.getHeader("Authorization");
-            String accessToken = null;
-            if (authHeader != null && authHeader.startsWith("Bearer ")) {
-                accessToken = authHeader.substring(7);
-            }
+            String accessToken = extractTokenFromCookie(request);
 
             authService.logout(user.getUserId(), accessToken);
+            
+            deleteCookie(response, "accessToken");
+            deleteCookie(response, "refreshToken");
         }
         return ApiResponse.success(null);
+    }
+    
+    private String extractTokenFromCookie(HttpServletRequest request) {
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if ("accessToken".equals(cookie.getName())) {
+                    return cookie.getValue();
+                }
+            }
+        }
+        return null;
+    }
+    
+    private void deleteCookie(HttpServletResponse response, String name) {
+        Cookie cookie = new Cookie(name, null);
+        cookie.setHttpOnly(true);
+        cookie.setPath("/");
+        cookie.setMaxAge(0);
+        response.addCookie(cookie);
     }
 
     @GetMapping("/me")

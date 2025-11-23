@@ -38,7 +38,7 @@ spring:
       port: ${REDIS_PORT}
       password: ${REDIS_PASSWORD}
       ssl:
-        enabled: true
+        enabled: false
       timeout: 30000          # 연결 타임아웃 30초
       lettuce:
         pool:
