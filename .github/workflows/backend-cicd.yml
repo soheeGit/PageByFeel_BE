@@ -84,11 +84,21 @@ jobs:
             DOCKER_HUB_USERNAME=${{ secrets.DOCKER_HUB_USERNAME }}
             DOCKER_HUB_REPOSITORY=${{ secrets.DOCKER_HUB_REPOSITORY }}
             DB_URL=${{ secrets.DB_URL }}
-            DB_USER=${{ secrets.DB_USER }}
+            DB_USERNAME=${{ secrets.DB_USERNAME }}
             DB_PASSWORD=$(echo '${{ secrets.DB_PASSWORD }}' | base64 -d)
             DB_NAME=${{ secrets.DB_NAME }}
             POSTGRES_PORT=5432
+            REDIS_HOST=redis
             REDIS_PORT=6379
+            REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}
+            JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}
+            GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
+            GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}
+            KAKAO_CLIENT_ID=${{ secrets.KAKAO_CLIENT_ID }}
+            KAKAO_CLIENT_SECRET=${{ secrets.KAKAO_CLIENT_SECRET }}
+            NAVER_CLIENT_ID=${{ secrets.NAVER_CLIENT_ID }}
+            NAVER_CLIENT_SECRET=${{ secrets.NAVER_CLIENT_SECRET }}
+            GOOGLE_GEMINI_KEY=${{ secrets.GOOGLE_GEMINI_KEY }}
             SWAGGER_SERVER_URL=${{ secrets.BASE_URL }}
             EOF
             
