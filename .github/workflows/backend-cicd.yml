@@ -64,7 +64,7 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_PRIVATE_KEY }}
           source: "deploy/*"
-          target: "/home/${{ secrets.EC2_USERNAME }}/pagebyfeel-backend/"
+          target: "/home/${{ secrets.EC2_USERNAME }}/pagebyfeel_be/"
           strip_components: 1
 
       # AWS EC2 배포 (Docker Compose + Docker Hub + Nginx + HTTPS)
@@ -78,7 +78,7 @@ jobs:
             echo "🚀 Starting deployment to AWS EC2 with HTTPS..."
             
             # 환경변수 파일 생성 (.env)
-            cd /home/${{ secrets.EC2_USERNAME }}/pagebyfeel-backend/deploy
+            cd /home/${{ secrets.EC2_USERNAME }}/pagebyfeel_be/deploy
             
             cat > .env << EOF
             DOCKER_HUB_USERNAME=${{ secrets.DOCKER_HUB_USERNAME }}
