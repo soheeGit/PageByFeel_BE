@@ -1,7 +1,11 @@
 package org.pagebyfeel.util;
 
 import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
+@Getter
+@NoArgsConstructor
 @AllArgsConstructor
 public class ApiResponse<T> {
     private boolean success;   // 요청 성공 여부
@@ -21,4 +25,3 @@ public class ApiResponse<T> {
         return new ApiResponse<>(false, message, null, code);
     }
 }
-
