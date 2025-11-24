@@ -27,10 +27,8 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
         
         return UserResponse.builder()
-                .userId(user.getUserId())
                 .email(user.getEmail())
                 .nickname(user.getNickname())
-                .role(user.getRole())
                 .provider(user.getProvider())
                 .build();
     }
@@ -44,10 +42,8 @@ public class UserServiceImpl implements UserService {
         user.updateNickname(request.getNickname());
 
         return UserResponse.builder()
-                .userId(user.getUserId())
                 .email(user.getEmail())
                 .nickname(user.getNickname())
-                .role(user.getRole())
                 .provider(user.getProvider())
                 .build();
     }

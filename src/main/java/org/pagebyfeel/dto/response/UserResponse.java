@@ -14,9 +14,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @Builder
 public class UserResponse {
-    private UUID userId;
     private String email;
     private String nickname;
-    private Role role;
     private Provider provider;
 }
