@@ -42,7 +42,6 @@ public class SecurityConfig {
                 .formLogin(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        // Swagger UI
                         .requestMatchers(
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
@@ -51,27 +50,21 @@ public class SecurityConfig {
                                 "/swagger-resources/**",
                                 "/webjars/**"
                         ).permitAll()
-                        // 인증
                         .requestMatchers(
                                 "/auth/refresh",
                                 "/oauth2/**",
                                 "/login/oauth2/**"
                         ).permitAll()
-                        // Health check
                         .requestMatchers("/actuator/health").permitAll()
-                        // 그 외 모든 요청 인증 필요
                         .anyRequest().authenticated()
                 )
                 .oauth2Login(oauth2 -> oauth2
-                        // Authorization Request 저장소 설정
                         .authorizationEndpoint(authorization -> authorization
                                 .authorizationRequestRepository(httpCookieOAuth2AuthorizationRequestRepository)
                         )
-                        // 사용자 정보 엔드포인트 설정
                         .userInfoEndpoint(userInfo ->
                                 userInfo.userService(customOAuth2UserService)
                         )
-                        // 성공/실패 핸들러 설정
                         .successHandler(oAuth2AuthenticationSuccessHandler)
                         .failureHandler(oAuth2AuthenticationFailureHandler)
                 )
