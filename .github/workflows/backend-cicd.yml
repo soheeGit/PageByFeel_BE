@@ -77,10 +77,20 @@ jobs:
           script: |
             echo "🚀 Starting deployment to AWS EC2 with HTTPS..."
             
-            # 환경변수 파일 생성 (.env)
             cd /home/${{ secrets.EC2_USERNAME }}/pagebyfeel_be/deploy
             
-            cat > .env << EOF
+            echo "🧹 Cleaning up old environment..."
+            # 기존 .env 파일 삭제 (혹시 남아있는 DB_USER 변수 제거)
+            rm -f .env
+            
+            # 기존 서비스 완전 중지 및 정리
+            echo "🔴 Stopping existing services..."
+            docker compose -f docker-compose.prod.yml down -v 2>/dev/null || true
+            docker compose down -v 2>/dev/null || true
+            
+            # 환경변수 파일 생성 (.env)
+            echo "📝 Creating new .env file..."
+            cat > .env << 'EOF'
             DOCKER_HUB_USERNAME=${{ secrets.DOCKER_HUB_USERNAME }}
             DOCKER_HUB_REPOSITORY=${{ secrets.DOCKER_HUB_REPOSITORY }}
             DB_URL=${{ secrets.DB_URL }}
@@ -104,27 +114,29 @@ jobs:
             
             echo "✅ .env file created"
             
-            echo "🔴 Stopping existing services..."
-            # 기존 서비스 중지
-            docker compose -f docker-compose.prod.yml down || true
+            # .env 파일 내용 검증 (민감정보 제외하고 키만 확인)
+            echo "🔍 Verifying .env file..."
+            grep "^DB_USERNAME=" .env > /dev/null && echo "  ✓ DB_USERNAME is set" || echo "  ✗ DB_USERNAME is missing"
+            grep "^DB_USER=" .env > /dev/null && echo "  ⚠️  WARNING: DB_USER found (should not exist)" || echo "  ✓ DB_USER not found (correct)"
             
             # 오래된 이미지 정리
+            echo "🧹 Cleaning old images..."
             docker image prune -f || true
             
             # 최신 이미지 풀
             echo "📥 Pulling latest image from Docker Hub..."
             docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/${{ secrets.DOCKER_HUB_REPOSITORY }}:latest
             
-            # 서비스 시작
+            # 서비스 시작 (명시적으로 docker-compose.prod.yml만 사용)
             echo "🚀 Starting services with HTTPS..."
             docker compose -f docker-compose.prod.yml up -d
             
             # 서비스 상태 확인
             echo "📊 Checking service status..."
             sleep 10
-            docker ps
+            docker ps -a
             
             echo ""
             echo "🎉 AWS EC2 HTTPS 배포가 완료되었습니다!"
-            echo "🔒 HTTPS URL: https://${{ secrets.DOMAIN_NAME }}"
-            echo "📊 Swagger UI: https://${{ secrets.DOMAIN_NAME }}/swagger-ui/index.html"
+            echo "🔒 HTTPS URL: https://${{ secrets.FRONT_ORIGIN }}"
+            echo "📊 Swagger UI: https://${{ secrets.SWAGGER_SERVER_URL }}/swagger-ui/index.html"
