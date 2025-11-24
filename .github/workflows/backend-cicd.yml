@@ -56,7 +56,7 @@ jobs:
           echo "✅ Image pushed to Docker Hub successfully!"
           echo "📍 Image URI: $DOCKER_HUB_USERNAME/$DOCKER_HUB_REPOSITORY:latest"
 
-      # 배포 파일들을 AWS EC2로 복사
+      # 배포 파일들을 AWS EC2로 복사 (deploy 폴더 구조 유지)
       - name: 📁 Copy deployment files to AWS EC2
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -65,7 +65,6 @@ jobs:
           key: ${{ secrets.EC2_PRIVATE_KEY }}
           source: "deploy/docker-compose.prod.yml,deploy/nginx"
           target: "/home/${{ secrets.EC2_USERNAME }}/pagebyfeel_be/"
-          strip_components: 1
           overwrite: true
 
       # AWS EC2 배포 (Docker Compose + Docker Hub + Nginx + HTTPS)
@@ -83,7 +82,7 @@ jobs:
             echo "🧹 Cleaning up old environment..."
             # 기존 .env 파일 삭제
             rm -f .env
-            # 개발용 docker-compose.yml만 삭제 (prod.yml은 SCP로 덮어쓰기됨)
+            # 개발용 docker-compose.yml 삭제
             rm -f docker-compose.yml
             
             # 기존 서비스 완전 중지 및 정리
