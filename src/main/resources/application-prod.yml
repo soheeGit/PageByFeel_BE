@@ -120,20 +120,6 @@ logging:
     root: WARN
     store.lastdance: WARN
 
-# Prometheus
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info,prometheus # Prometheus 엔드포인트 노출
-  prometheus:
-    metrics:
-      export:
-        enabled: true
-  health:
-    redis:
-      enabled: false # Redis 헬스 체크 비활성화 (초기화 시 대기 방지)
-
 gemini:
   api:
     key: ${GOOGLE_GEMINI_KEY}
