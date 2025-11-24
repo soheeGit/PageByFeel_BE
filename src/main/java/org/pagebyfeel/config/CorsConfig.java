@@ -29,7 +29,8 @@ public class CorsConfig {
             ));
         } else {
             configuration.setAllowedOrigins(List.of(
-                    "https://jinsohee.store"
+                    "https://jinsohee.store",
+                    "https://www.jinsohee.store"
             ));
         }
         
