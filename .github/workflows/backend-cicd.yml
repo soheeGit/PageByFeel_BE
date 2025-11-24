@@ -80,11 +80,11 @@ jobs:
             
             cd /home/${{ secrets.EC2_USERNAME }}/pagebyfeel_be/deploy
             
-            echo "🧹 Cleaning up old files..."
-            # 기존 파일 완전 삭제
+            echo "🧹 Cleaning up old environment..."
+            # 기존 .env 파일 삭제
             rm -f .env
-            rm -f docker-compose.yml  # 개발용 파일 삭제
-            rm -f docker-compose.prod.yml  # 기존 파일 삭제하여 새 버전 받도록
+            # 개발용 docker-compose.yml만 삭제 (prod.yml은 SCP로 덮어쓰기됨)
+            rm -f docker-compose.yml
             
             # 기존 서비스 완전 중지 및 정리
             echo "🔴 Stopping existing services..."
