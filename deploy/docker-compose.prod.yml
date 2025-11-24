@@ -47,6 +47,7 @@ services:
       - GOOGLE_GEMINI_KEY=${GOOGLE_GEMINI_KEY}
       - SPRINGDOC_SWAGGER_UI_SERVERS_0_URL=${SWAGGER_SERVER_URL}
       - SPRINGDOC_SWAGGER_UI_SERVERS_0_DESCRIPTION=Production Server
+      - OAUTH2_REDIRECT_URI=${OAUTH2_REDIRECT_URI}
     depends_on:
       redis:
         condition: service_healthy
